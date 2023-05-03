@@ -1,0 +1,11 @@
+#"I'm designing a GPT agent based on AutoGPT to conduct research. Research the current progress of research and the potential benefits of an agent that can browse the web to learn about any topic to improve its answers. Then, list 10 use cases."
+
+#'You are the producer of the All-In podcast working with Jason. Today is Tuesday April 11 2023, and you need to write a podcast outline on 5 topics related to business, technology, and politics. Research events and write a short summary of each sketch.'
+
+#'You are the producer of Saturday Night Live. Today is April 11 2023, and you need to write 3 comedy sketches based on current events that have happened in the last month. Research events and write a short summary of each sketch.'
+
+#'Research and find 10 hedge funds that use Real World Healthcare Data (e.g. claims and EMRs,) as part of their research. Compare these 10 hedge funds on employee size, AUM, and returns.'
+
+#'Write a political economics investment thesis based on the events occuring since the start of April 1 2023. Focus on 3 events that have occured in April 2023 (the more recent the better,) and propose a concrete investment strategy validated by these events.'
+
+#'Develop a very specific biotech investment proposal based on an investment thesis, market research, and fundamental analysis. Make it short and compelling (approximately 500 words.) Only use 5 tasks total, do not add more.'

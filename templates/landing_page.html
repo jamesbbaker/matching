@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Toliman AI" />
+    <meta property="og:description" content="Explore the Unexplored with Autonomous AI Research" />
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='Toliman thumbnail.png') }}" />
+    <meta property="og:image" content="{{ url_for('static', filename='Toliman thumbnail.png') }}" />
+    <title>Toliman AI - Autonomous Research</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% include 'mobile_styles_and_script.html' %} 
+    <style>
+      .bg-space {
+        background-image: url("{{ url_for('static', filename='space_' ~ image_number ~ '.jpg') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center top;
+      }
+      html, body {
+        height: 100%;
+      }
+      .main-content {
+        min-height: calc(100% - 10.5rem);
+        position: relative;
+      }
+      .bg-dark-gray-purple {
+        background-color: rgba(35, 35, 35, 0.90);
+      }
+      .opaque-bg {
+        background-color: rgba(0, 0, 0, 0);
+      }
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .nav-container, .content-container {
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .content-container {
+        padding: 2rem;
+      }
+      .text-white {
+        color: white;
+      }
+      @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+      }
+      .animated {
+        animation: fadeIn 3s;
+      }
+    </style>
+</head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2M3QM7GVF7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2M3QM7GVF7');
+</script>
+<body class="bg-black bg-space flex flex-col" data-image-number="{{ image_number }}">
+    <header class="opaque-bg py-4 px-6 shadow-md">
+        <div class="nav-container flex justify-between items-center">
+            <div class="text-white text-2xl">
+                <a href="{{ url_for('landing_page') }}"><img src="{{ url_for('static', filename='Toliman logo wide.png') }}" alt="Toliman AI" class="h-12 logo" /></a>
+            </div>
+            <div class="desktop-nav flex items-center">
+                <a href="{{ url_for('home') }}" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4">App</a>
+                <a href="{{ url_for('gallery') }}" class="text-white hover:text-gray-300 mr-6">Gallery</a>
+                <a href="{{ url_for('learn') }}" class="text-white hover:text-gray-300">Learn</a>
+            </div>
+            <div class="hamburger" onclick="showMobileNav()">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828859.png" alt="Menu" class="h-6">
+            </div>
+        </div>
+        <div id="mobileNav" class="mobile-nav">
+            <a href="{{ url_for('home') }}" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" style="margin-top: 1rem;">App</a>
+            <a href="{{ url_for('gallery') }}" class="text-white hover:text-gray-300">Gallery</a>
+            <a href="{{ url_for('learn') }}" class="text-white hover:text-gray-300">Learn</a>
+        </div>
+        <div id="closeIcon" class="close-icon" onclick="hideMobileNav()">
+            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828926.png" alt="Close" class="h-6">
+        </div>
+        <div id="mobileNavOverlay" class="mobile-nav-overlay" onclick="hideMobileNav()"></div>
+    </header>
+    <div class="content-container container mx-auto mt-2 py-12 px-6 rounded-lg shadow-lg main-content overflow-y-auto">
+        <div class="bg-dark-gray-purple rounded-lg p-4 mb-16 animated">
+            <div class="container mx-auto text-center text-white">
+                <h1 class="text-5xl font-base">Toliman AI</h1>
+                <p class="text-2xl mt-4">Explore the Unexplored with Autonomous AI Research</p>
+                <a href="{{ url_for('home') }}" class="text-black bg-gray-100 hover:bg-gray-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-8 inline-block">Get Started</a>
+                <a href="{{ url_for('learn') }}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-8 inline-block ml-4">Learn More</a>
+            </div>
+        </div>
+        <div class="bg-dark-gray-purple rounded-lg p-4 animated">
+            <div class="container mx-auto text-center text-white my-8">
+                <a href="#" class="hover:text-gray-300">Watch Video</a>
+            </div>
+        </div>
+    </div>
+  <footer class="opaque-bg mt-4 py-4">
+    <div class="text-center text-white text-sm">
+        <a href="{{ url_for('terms') }}" class="hover:text-gray-300 mr-4">Terms of Service</a>
+        <a href="{{ url_for('privacy') }}" class="hover:text-gray-300">Privacy Policy</a>
+    </div>
+  </footer>
+</html>

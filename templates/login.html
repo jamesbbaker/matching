@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <script>
+    function openGoogleLogin() {
+      var googleAuthUrl = "{{ url_for('google.login') }}";
+      sessionStorage.setItem("current_url", window.location.href);
+      window.location.href = googleAuthUrl;
+    }
+  </script>
+  <h1 class="text-white text-4xl mb-4">Login</h1>
+  <div class="flex flex-col items-center text-white"> <!-- Add container class -->
+  <button onclick="openGoogleLogin();" class="google-btn">
+    <img src="{{ url_for('static', filename='Sign in with Google.png') }}" alt="Log in with Google" class="google-img">
+  </button>
+  <form method="POST" action="{{ url_for('login') }}" class="mt-4">
+    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4" type="email" name="email" placeholder="Email" required>
+    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4" type="password" name="password" placeholder="Password" required>
+    <button class="text-black bg-gray-100 hover:bg-gray-300 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4" type="submit">Log in</button>
+  </form>
+  <p class = 'text-base'>Don't have an account? <a class = 'font-bold text-purple-100 hover:text-purple-300' href="{{ url_for('signup') }}">Sign up.</a></p>
+    </div>
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+{% endblock %}

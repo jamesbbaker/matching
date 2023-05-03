@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+{% extends "base.html" %} {% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Output</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <style>
+
+      .share-modal {
+          position: fixed;
+          z-index: 1000;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .gallery-approval-popup {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4CAF50;
+        color: white;
+        padding: 16px;
+        border-radius: 5px;
+        z-index: 1001;
+        display: none;
+      }
+
+      .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .input-container label {
+            flex: 0 0 30%;
+        }
+        
+        .input-container input {
+            flex: 1;
+            margin-left: 1rem;
+           color: black;
+        }
+
+      .hidden {
+          display: none;
+      }
+      
+      .share-modal-content {
+          background-color: black;
+          padding: 1rem;
+          border-radius: 8px;
+          width: 80%;
+          max-width: 600px;
+      }
+        .wrap {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+        }
+        .highlight {
+            background-color: lightblue;
+            transition: background-color 2s ease;
+        }
+        .popup-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            color: black;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: lightgray;
+            color: black;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .citation-btn {
+            padding: 1rem;
+            border-radius: 5px;
+            font-weight:bold;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }  
+        @media (max-width: 768px) {
+          .flip-card {
+            width: 50%;
+          }
+          .citation-btn {
+            font-size: 16px;
+            width: 100%
+          }
+          .popup-content {
+            font-size: 16px;
+          }
+        }
+    </style>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.0/socket.io.min.js"></script>
+    <script>
+
+     function addWrappedText(doc, text, xPos, yPos, maxWidth) {
+      const lines = doc.splitTextToSize(text, maxWidth);
+    
+      for (const line of lines) {
+        if (yPos + 6.5 > doc.internal.pageSize.height - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(line, xPos, yPos);
+        yPos += 6.5;
+      }
+    
+      return yPos;
+    }
+    
+    function downloadPDF() {
+      const doc = new jspdf.jsPDF();
+    
+      // Add Objective
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Objective:', 20, 20);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      const objective = document.getElementById('objective').innerText;
+      let yPos = addWrappedText(doc, objective, 20, 30, 150);
+    
+      // Add Output
+      yPos += 10;
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Output:', 20, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      yPos += 10;
+      const output = document.getElementById('refined_outcome').innerText;
+      yPos = addWrappedText(doc, output, 20, yPos, 150);
+    
+      // Add References
+      yPos += 10;
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('References:', 20, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      yPos += 10;
+      const cardContainer = document.getElementById('card-container');
+      cardContainer.childNodes.forEach((button, index) => {
+        const reference = `${index + 1}. ${button.innerText}`;
+        yPos = addWrappedText(doc, reference, 20, yPos, 150);
+        yPos += 5;
+      });
+    
+      // Save and download the PDF
+      doc.save('Autonomous Research - Output.pdf');
+    }
+        const colors = [
+            { bg: '#4B0082', text: 'white' },
+            { bg: '#6A5ACD', text: 'white' },
+            { bg: '#9370DB', text: 'black' },
+            { bg: '#B0C4DE', text: 'black' },
+            { bg: '#4682B4', text: 'white' },
+            { bg: '#6495ED', text: 'black' },
+            { bg: '#87CEFA', text: 'black' },
+            { bg: '#ADD8E6', text: 'black' },
+        ];
+
+            function createRefButton(refNumber, refData) {
+                  const button = document.createElement('button');
+                  button.classList.add('citation-btn');
+                  button.innerHTML = `<h3>${refData.reference}</h3>`;
+                  applyButtonColor(button);
+                  button.onclick = () => showPopup(`<p class='text-base'>${refData.summary}</p><br><a href="${refData.url}" target="_blank">${refData.url}</a>`);
+                  return button;
+              }
+              
+              function fetchRefs() {
+                  const email = '{{ email }}';
+                  const index = "{{ index }}";
+              
+                  fetch('/get_refs', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ email: email, index: index }),
+                  })
+                      .then(response => response.json())
+                      .then(jsonData => {
+                          console.log('Fetched refs JSON:', jsonData);
+                          const refs = JSON.parse(jsonData.refs);
+                          if (refs.length > 0) {
+                              const cardContainer = document.getElementById('card-container');
+                              refs.forEach(ref => {
+                                  const refNumber = Object.keys(ref)[0];
+                                  const refData = ref[refNumber];
+                                  const button = createRefButton(refNumber, refData);
+                                  cardContainer.appendChild(button);
+                              });
+                          }
+                      })
+                      .catch(error => {
+                          console.error('Error fetching refs:', error);
+                      });
+              }
+        function fetchOutput() {
+            const email = '{{ email }}';
+            const index = "{{ index }}";
+        
+            fetch('/get_output', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email: email, index: index }),
+            })
+              .then(response => response.json())
+              .then(data => {
+                document.getElementById("refined_outcome").innerHTML = data.output;
+              })
+              .catch(error => {
+                console.error('Error fetching output:', error);
+              });
+          }
+    
+
+        function applyButtonColor(button) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            button.style.backgroundColor = color.bg;
+            button.style.color = color.text;
+        }
+
+        function showPopup(content) {
+            const popupContainer = document.getElementById("popup-container");
+            const popupContent = document.getElementById("popup-content");
+            popupContent.innerHTML = content;
+            popupContainer.style.display = "block";
+        }
+
+        function hidePopup() {
+            const popupContainer = document.getElementById("popup-container");
+            popupContainer.style.display = "none";
+        }
+         const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port, {
+            query: { email: "{{ email }}" }, // Add this line to pass the email as a query parameter
+            transportOptions: {
+                polling: {
+                    extraHeaders: {
+                        'Authorization': 'Bearer {{ email }}'
+                    }
+                }
+            }
+        });
+        function highlightElement(elementId) {
+            const element = document.getElementById(elementId);
+            element.classList.add('highlight');
+            setTimeout(() => {
+                element.classList.remove('highlight');
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            fetchRefs();
+            fetchOutput()
+          
+            socket.on('update_refined_outcome', (data) => {
+                try {
+                    document.getElementById("refined_outcome").innerHTML = data.refined_outcome;
+                    highlightElement("refined_outcome_container");
+                } catch (error) {
+                    console.error('Error handling update_refined_outcome event:', error);
+                }
+
+              // Update the tokens in HTML
+
+            });
+
+            socket.on('new_ref', (data) => {
+              try {
+                const cardContainer = document.getElementById('card-container');
+                const button = document.createElement('button');
+                button.classList.add('citation-btn');
+                button.innerHTML = `<h3>${data.reference}</h3>`;
+                applyButtonColor(button);
+                button.onclick = () => showPopup(`<p class = 'text-base'>${data.result}</p><br><a href="${data.url}" target="_blank">${data.url}</a>`);
+                cardContainer.appendChild(button);
+              } catch (error) {
+                console.error('Error handling new_ref event:', error);
+              }
+
+            const tokenCountElement = document.getElementById("token-count");
+            const currentTokens = parseInt(tokenCountElement.textContent, 10);
+            tokenCountElement.textContent = currentTokens - 1;
+            });
+
+            socket.on('task_list', (data) => {
+                try {
+                    document.getElementById("task_list").innerHTML = data.task_list.replace(/(\d+\.)/g, (match, number, index) => index == 0 ? number : `<br>${number}`);
+                    highlightElement("task_list_container");
+                } catch (error) {
+                    console.error('Error handling task_list event:', error);
+                }
+            });
+            
+            socket.on('completed_tasks', (data) => {
+                try {
+                    document.getElementById("completed_tasks").innerHTML = data.completed_tasks.replace(/(\d+\.)/g, (match, number, index) => index == 0 ? number : `<br>${number}`);
+                    highlightElement("completed_tasks_container");
+                } catch (error) {
+                    console.error('Error handling completed_tasks event:', error);
+                }
+            });
+
+            socket.on('task', (data) => {
+                try {
+                    document.getElementById("task").innerHTML = data.task;
+                    highlightElement("task_container");
+                } catch (error) {
+                    console.error('Error handling task event:', error);
+                }
+            });
+
+            socket.on('reasoning', (data) => {
+                try {
+                    document.getElementById("reasoning").innerHTML = data.reasoning;
+                    highlightElement("reasoning_container");
+                } catch (error) {
+                    console.error('Error handling reasoning event:', error);
+                }
+            });
+
+            socket.on('references', (data) => {
+                try {
+                    document.getElementById("references").innerHTML = data.references;
+                    highlightElement("references_container");
+                } catch (error) {
+                    console.error('Error handling references event:', error);
+                }
+            });
+            socket.on('finished', (data) => {
+                document.getElementById("task_list_container").remove();
+                document.getElementById("task_container").remove();
+            });
+    
+            if ('{{status}}' === 'Completed.') {
+                document.getElementById("task_list_container").remove();
+                document.getElementById("task_container").remove();
+            }
+        });
+
+        function deleteOutput() {
+            const deleteButton = document.getElementById("delete-output-button");
+            deleteButton.disabled = true;
+            deleteButton.classList.add("opacity-50");
+            deleteButton.innerText = "Deleting...";
+            const email = '{{ email }}';
+            const index = "{{ index }}";
+            fetch('/delete_output', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email,
+                                      index: index }),
+            }).then((response) => {
+                if (response.ok) {
+                    window.location.href = '/home';
+                } else {
+                  console.log('Error deleting output:', response)
+                    console.error('Failed to delete output');
+                }
+            });
+        }
+        function minimize() {
+          const email = '{{ email }}';
+          const objective = '{{ OBJECTIVE }}';
+          const max_steps = "{{ MAX_STEPS }}";
+          const index = "{{ index }}";
+            fetch('/minimize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email,
+                                     objective: objective,
+                                     max_steps: max_steps,
+                                     index: index}),
+            }).then((response) => {
+                if (response.ok) {
+                    window.location.href = '/home';
+                } else {
+                  console.log('Error saving output:', response)
+                    console.error('Failed to minimize.');
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+  <div class="relative">
+    <div class="absolute top-0 right-0 flex items-center text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] mr-[-0.25rem]">
+      <span id = 'token-count' style="font-size: 90%;">{{ tokens }}</span>
+      <span class="ml-2" style="font-size: 90%;">🪙</span>
+    </div>
+    <div class="container mx-auto py-8 rounded p-2.5">
+      <!-- Create 3 columns for containers -->
+      <div class="flex flex-wrap -mx-2">
+          <!-- Left column -->
+          <div class="w-full md:w-1/5 p-2">
+              <div class="mb-4">
+                  <label class="block text-white text-sm font-bold mb-2" for="objective">Objective:</label>
+                  <div class="shadow appearance-none border font-sans text-sm rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline" id="objective">{{OBJECTIVE}}</div>
+              </div>
+
+              <div class="mb-4">
+                  <label class="block text-white text-sm font-bold mb-2" for="max-tasks">Number of references:</label>
+                  <div class="shadow appearance-none border font-sans text-sm rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline" id="max-tasks">{{MAX_STEPS}}</div>
+              </div>
+          </div>
+
+          <!-- Center column -->
+          <div class="w-full md:w-3/5 p-2">
+            <label class="block text-white text-sm font-bold mb-2">Task:</label>
+            <div class="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline" id="task_container">
+                <pre id="task" class="wrap font-sans text-sm"> {{task}}</pre>
+              </div>
+            <br>
+            <label class="block text-white text-sm font-bold mb-2">Output:</label>
+            <div id='refined_outcome_container' class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 text-black">
+                  <pre id="refined_outcome" class="mt-4 wrap font-sans text-sm text-black"></pre>
+              </div>
+          </div>
+
+       <!-- Right column -->
+      <div class="w-full md:w-1/5 p-2">
+        
+          <label class="block text-white text-sm font-bold mb-2">Task List:</label>
+        <div id='task_list_container' class="mb-4">
+          <div class="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline font-sans text-sm" id="task_list">
+            {{task_list}}
+          </div>
+        </div>
+        
+          <label class="block text-white text-sm font-bold mb-2">Completed Tasks:</label>
+        <div id='completed_tasks_container' class="mb-4">
+          <div class="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline font-sans text-sm" id="completed_tasks">
+            {{completed_tasks}}
+          </div>
+        </div>
+      </div>
+      <!-- References -->
+      <div id="card-container" class="container mx-auto flex flex-wrap py-8"></div>
+        <div id="popup-container" class="popup-container text-black text-base" onclick="hidePopup()">
+          <div id="popup-content" class="popup-content text-black text-base" onclick="event.stopPropagation()">
+            <span class="popup-close">&times;</span>
+          </div>
+        </div>
+      </div>
+        <div class="flex justify-center mt-8">
+          <button class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-2 px-4 rounded mr-4" onclick="minimize()">Minimize (continues in background)</button>
+          <button id="delete-output-button" class="bg-red-100 hover:bg-red-300 text-black font-bold py-2 px-4 rounded mr-4" onclick="deleteOutput()">Delete</button>
+         {% if status == 'Completed.' %}
+            <button id="download-pdf" class="bg-blue-100 hover:bg-blue-300 text-black font-bold py-2 px-4 rounded mr-4" onclick="downloadPDF()">Download PDF</button>
+            <button id="share-button" class="bg-green-100 hover:bg-green-300 text-black font-bold py-2 px-4 rounded">Share</button>
+          {% endif %}
+<div id="share-modal" class="share-modal hidden">
+    <div class="share-modal-content">
+        <h2 class="text-center mb-4">Share Agent</h2>
+        <form id="share-form">
+            <div class="input-container">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" placeholder="My First Automated Research Project" required>
+            </div>
+            <div class="input-container">
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" placeholder="Include any information about this project" required>
+            </div>
+            <div class="input-container">
+                <label for="author">Author:</label>
+                <input type="text" id="author" name="author" placeholder="Share author details if you want (e.g. Twitter profile)">
+            </div>
+            <div class="text-center mt-4">
+                <button id="share-submit" type="submit" class="bg-blue-100 hover:bg-blue-300 text-black font-bold py-2 px-4 rounded mr-2">Share</button>
+                <button id="share-cancel" type="button" class="bg-red-100 hover:bg-red-300 text-black font-bold py-2 px-4 rounded">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+          <div id="gallery-approval-popup" class="gallery-approval-popup">
+  Successfully submitted for approval! You will receive an email if featured on the Gallery page.
+</div>
+  </div>
+  </div>
+    <script>   
+
+            function showGalleryApprovalPopup() {
+              const popup = document.getElementById("gallery-approval-popup");
+              popup.style.display = "block";
+              setTimeout(() => {
+                popup.style.display = "none";
+              }, 3000);
+            }
+              
+            document.getElementById("share-button").addEventListener("click", () => {
+                document.getElementById("share-modal").classList.remove("hidden");
+            });
+            
+            document.getElementById("share-cancel").addEventListener("click", () => {
+                document.getElementById("share-modal").classList.add("hidden");
+            });
+            
+            document.getElementById("share-form").addEventListener("submit", (e) => {
+                e.preventDefault();
+                showGalleryApprovalPopup();
+                const title = document.getElementById("title").value;
+                const description = document.getElementById("description").value;
+                const author = document.getElementById("author").value;
+                const email = "{{ email }}";
+                const index = "{{ index }}";
+                fetch("/share_agent", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ title, description, author, email, index }),
+                })
+                .then((response) => {
+                    if (response.ok) {
+                        // Close the modal
+                        document.getElementById("share-modal").classList.add("hidden");
+                    } else {
+                        console.error("Failed to share agent");
+                    }
+                });
+            });
+    </script>
+</body>
+</html>
+{% endblock %}

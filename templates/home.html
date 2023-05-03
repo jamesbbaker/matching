@@ -1,0 +1,182 @@
+{% extends "base.html" %} {% block content %}
+{% block head %}
+<style>
+  .baseball-card {
+    width: calc(100% / 3 - 10px);
+    height: 300px;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    perspective: 1000px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .scrollable {
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+
+  .card-side {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    backface-visibility: hidden;
+  }
+
+  .card-front {
+    background-color: inherit;
+    color: inherit;
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+
+  .card-back {
+    background-color: inherit;
+    color: inherit;
+    overflow-y: auto;
+    touch-action: pan-y;
+    transform: rotateY(180deg);
+  }
+
+  .light-text {
+    color: white;
+  }
+
+  .dark-text {
+    color: black;
+  }
+  .no-padding {
+    padding: 0 !important;
+  }
+
+  .expand-btn {
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    color: inherit;
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 5px 10px;
+    color: black;
+  }
+
+  @media screen and (max-width: 767px) {
+    .baseball-card {
+      width: calc(100% - 20px);
+    }
+    h2, .text-4xl{
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+<div class="relative">
+  <div class="no-padding absolute top-0 right-0 flex items-center text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] mr-[-0.25rem]">
+    <span style="font-size: 90%;">{{ tokens }}</span>
+    <span class="ml-2" style="font-size: 90%;">🪙</span>
+  </div>
+  <h2 class="text-white text-4xl mb-8 text-left">Research Home</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+{% set searching_agent = namespace(found=False) %}
+{% if agents %}
+{% for agent_id, agent in agents.items() %}
+  {% if agent.status == 'Searching...' %}
+    {% set searching_agent.found = True %}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if searching_agent.found %}
+  <div class="bg-gray-300 text-black font-bold py-10 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform">
+    <h2 class="text-2xl font-bold mb-2 text-center">New Research AI</h2>
+    <p class="text-black text-xl text-center">You cannot create a new AI research assistant while another is searching...</p>
+  </div>
+{% else %}
+  <a href="{{ url_for('create_bot') }}" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-10 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110">
+    <h2 class="text-2xl font-bold mb-2 text-center">New Research AI</h2>
+    <p class="text-black text-xl text-center">Create a new AI research assistant</p>
+  </a>
+{% endif %}
+    <a href="{{ url_for('tokens') }}" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-10 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110">
+      <h2 class="text-2xl font-bold mb-2 text-center">Purchase Research Tokens</h2>
+      <p class="text-black text-xl text-center">Buy tokens to use with the AI research assistant</p>
+    </a>
+  </div>
+  <div class="mt-12">
+    <h2 class="text-white text-2xl font-bold mb-4 text-center">Agent History:</h2>
+    <div class="flex flex-wrap">
+      {% if agents%}
+      {% for agent_id, agent in agents.items() %}
+      {% set random_color = 'hsl(' ~ (240 + (agent_id|int % 2) * 60) ~ ', 50%, ' ~ (30 + (agent_id|int % 4) * 10) ~ '%)' %}
+      {% set text_color = 'dark-text' if (30 + (agent_id|int % 4) * 10) > 50 else 'light-text' %}
+      <div class="baseball-card {{text_color}}" style="background-color: {{random_color}};">
+        <div class="card-inner">
+          <div class="card-side card-front scrollable">
+            <p class = 'text-base'>Research agent #{{ agent_id }}</p>
+            <br>
+            <p class = 'text-base'>Objective: {{ agent.objective }}</p>
+            <br>
+            <p class = 'text-base'>Steps: {{ agent.steps }}</p>
+            <br>
+            <p class = 'text-base'>Status: {{ agent.status }}</p>
+          </div>
+          <div class="card-side card-back scrollable">
+            <p class = 'text-base'>{{ agent.output }}</p>
+            <button class="expand-btn" onclick="navigateToAgent('{{ agent.status }}', '{{ agent_id }}'); event.stopPropagation();">Expand</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% endif %}
+    </div>
+  </div>
+  {% if purchase_success %}
+  <script>
+    window.onload = function() {
+      alert("Your purchase was successful! You can now use your tokens.");
+    };
+  </script>
+  {% endif %}
+</div>
+<script>
+  function navigateToAgent(status, index) {
+      window.location.href = '{{ url_for('current_agent', index=0) }}'.replace('/0', '/' + index);
+    }
+
+  function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints;
+  }
+  
+  if (isTouchDevice()) {
+    document.querySelectorAll('.card-inner').forEach(card => {
+      card.parentNode.addEventListener('click', () => {
+        card.style.transform = card.style.transform === 'rotateY(180deg)' ? '' : 'rotateY(180deg)';
+      });
+    });
+  } else {
+    document.querySelectorAll('.card-inner').forEach(card => {
+      card.parentNode.addEventListener('mouseenter', () => {
+        card.style.transform = 'rotateY(180deg)';
+      });
+      card.parentNode.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+    });
+  }
+</script>
+{% endblock %}

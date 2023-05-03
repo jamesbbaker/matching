@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block content %}
+<div class="relative">
+  <a href="{{ url_for('home') }}" class="absolute top-0 left-0 text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] ml-[-0.25rem] rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110">
+    &larr;
+  </a>
+  <div class="absolute top-0 right-0 flex items-center text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] mr-[-0.25rem]">
+    <span style="font-size: 90%;">{{ tokens }}</span>
+    <span class="ml-2" style="font-size: 90%;">🪙</span>
+  </div>
+  <div class="pt-8">
+    <h1 class="text-white text-4xl font-bold mb-8 text-center">Tokens</h1>
+    <p class="text-white text-xl mb-8 text-center">Each token enables the AI research assistant to search and browse a web reference. The most useful references are selected across multiple Google Searches based on your objective. This helps us cover the significant GPT-4 and GPT-3.5 credits required to accomplish your ultimate objective (e.g. podcast notes based on AI news for the week.)</p>
+  </div>
+  <div class="flex flex-col space-y-6 mt-8">
+    <hr class="border-t border-white w-full mx-auto" />
+    <div class="flex items-center">
+      <button onclick="redirectToCheckout('price_1MyTmBJt9Voxe5t4z5q1bl9u');" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-4 px-6 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110"> 20 Tokens for $2.50</button>
+      <span class="text-white text-xl px-6">20 references (e.g., 4 agents with 5 references each.)</span>
+    </div>
+    <hr class="border-t border-white w-full mx-auto" />
+    <div class="flex items-center">
+      <button onclick="redirectToCheckout('price_1MzSB2Jt9Voxe5t4Lg2byENy');" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-4 px-6 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110"> 100 Tokens for $10</button>
+      <span class="text-white text-xl px-6">100 references (e.g., 20 agents with 5 references each.)</span>
+    </div>
+    <hr class="border-t border-white w-full mx-auto" />
+    <div class="flex items-center">
+      <button onclick="redirectToCheckout('price_1MzULGJt9Voxe5t4uMbiD7sd');" class="bg-gray-100 hover:bg-gray-300 text-black font-bold py-4 px-6 rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110"> 300 Tokens for $25</button>
+      <span class="text-white text-xl px-6">300 references (e.g., 60 agents with 5 references each.)</span>
+    </div>
+    <hr class="border-t border-white w-full mx-auto" />
+  </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe("pk_live_51MyTaBJt9Voxe5t45qtZxmm1lxWa8AUQA0AUE8IMtVY3st67ZWc7w32fmTxYvWd4zThwq2J5kskIb17DxiTE6O7n00OUMTXwLp");
+
+  async function redirectToCheckout(priceId) {
+    const response = await fetch("/create-checkout-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ priceId: priceId }),
+    });
+
+    const session = await response.json();
+
+    const result = await stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (result.error) {
+      console.error("Error redirecting to Checkout:", result.error.message);
+    }
+  }
+</script>
+{% endblock %}

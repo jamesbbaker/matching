@@ -1,0 +1,87 @@
+{% extends "base.html" %} {% block content %}
+<div class="relative">
+  <a href="{{ url_for('home') }}" class="absolute top-0 left-0 text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] ml-[-0.25rem] rounded focus:outline-none focus:shadow-outline transition-all duration-200 ease-in-out transform hover:scale-110">
+    &larr;
+  </a>
+  <div class="absolute top-0 right-0 flex items-center text-white text-4xl font-bold py-4 px-6 mt-[-0.25rem] mr-[-0.25rem]">
+    <span style="font-size: 90%;">{{ tokens }}</span>
+    <span class="ml-2" style="font-size: 90%;">🪙</span>
+  </div>
+  <div class="container mx-auto pt-16 rounded p-2.5">
+    <h2 class="text-white text-4xl font-base mb-4">Create a Bot</h2>
+
+    <form action="{{ url_for('create_bot') }}" method="post" onsubmit="return validateTokens();">
+      <div class="mb-4">
+        <label class="block text-white text-sm font-bold mb-2" for="objective">Objective:</label>
+        <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" name="objective" id="objective" rows="5">{{OBJECTIVE}}</textarea>
+        <p class="text-white text-xs italic">The more specific the prompt the better including dates, structure, research areas.</p>
+      </div>
+      <div class="mb-4">
+        <label class="block text-white text-sm font-bold mb-2" for="max_steps">Number of references to include: <span id="max_steps_display">6</span></label>
+        <input class="custom-slider shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="range" name="max_steps" id="max_steps" min="3" max="15" step="3" value="6" oninput="updateTokenCost();">
+        <p class="text-white text-xs italic">Select between 3-15 references per agent which will be selected by usefulness across multiple Google Searches based on your objective</p>
+      </div>
+      <div class="mb-4">
+        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Create Bot</button>
+      </div>
+    </form>
+  </div>
+</div>
+<style>
+  .custom-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  .custom-slider:hover {
+    opacity: 1;
+  }
+
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #007BFF;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -5px;
+  }
+
+  .custom-slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #007BFF;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .custom-slider::-moz-range-track {
+    background: #d3d3d3;
+    border: none;
+    height: 5px;
+    border-radius: 3px;
+  }
+</style>
+<script>
+  function updateTokenCost() {
+    const maxSteps = document.getElementById("max_steps").value;
+    document.getElementById("max_steps_display").innerText = maxSteps;
+  }
+
+  function validateTokens() {
+    const maxSteps = document.getElementById("max_steps").value;
+    const tokens = {{ tokens }};
+    if (maxSteps > tokens) {
+      alert("You don't have enough tokens to start an agent with this number of steps. Please reduce the number of steps or purchase more tokens.");
+      return false;
+    }
+    return true;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+  async function approveAgent(agentId) {
+    const response = await fetch("/approve_agent?id=" + agentId, {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      console.log("Agent approved:", agentId);
+      location.reload(); // Reload the page to reflect the changes
+    } else {
+      console.error("Failed to approve agent:", agentId);
+    }
+  }
+
+  async function rejectAgent(agentId) {
+    const response = await fetch("/reject_agent?id=" + agentId, {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      console.log("Agent rejected:", agentId);
+      location.reload(); // Reload the page to reflect the changes
+    } else {
+      console.error("Failed to reject agent:", agentId);
+    }
+  }
+</script>
+<div class="container mx-auto py-8">
+    <h1 class="text-center text-white text-4xl mb-8">Gallery Approval</h1>
+        {% for agent in gallery_agents %}
+        <div class="bg-gray-700 rounded-lg shadow-lg p-4">
+            <h3 class="text-center text-xl mb-2">Title: {{ agent.title }}</h3>
+            <p class="text-sm mb-4">Author: {{ agent.author }}</p>
+            <br>
+            <p class="text-sm mb-4">Description: {{ agent.description }}</p>
+            <br>
+            <p class="text-sm mb-4">Output: {{ agent.output }}</p>
+            <br>
+            <p class="text-sm mb-4">References: {{ agent.references }}</p>
+            <div class="text-right">
+                <button class="bg-green-100 hover:bg-green-300 text-black font-bold py-1 px-2 rounded mr-2" onclick="approveAgent('{{ agent.id }}')">✓</button>
+                <button class="bg-red-100 hover:bg-red-300 text-black font-bold py-1 px-2 rounded" onclick="rejectAgent('{{ agent.id }}')">✗</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

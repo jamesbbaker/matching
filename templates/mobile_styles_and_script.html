@@ -1,0 +1,128 @@
+<style>
+  .google-img {
+      max-width: 500px;
+  }
+  
+  @media (max-width: 640px) {
+    .main-content {
+      min-height: calc(100% - 16rem);
+    }
+    h1, .text-4xl {
+      font-size: 2.5rem;
+    }
+        h2, .text-4xl{
+      font-size: 1.5rem;
+    }
+    p, .text-2xl {
+      font-size: 1.5rem;
+    }
+    .text-xl {
+      font-size: 1.25rem;
+    }
+    .logo {
+      height: auto;
+      width: auto;
+      max-height: 50px;
+      margin-left: 0px;
+    }
+    
+  }
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(40, 40, 65, 0.90);
+    padding-top: 4rem;
+    z-index: 1000;
+    text-align: center;
+  }
+  .mobile-nav a {
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 125%;
+  }
+  .hamburger {
+    display: none;
+    cursor: pointer;
+  }
+  .close-icon {
+    display: none;
+    cursor: pointer;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    transform: rotate(45deg);
+    z-index: 1001;
+    filter: invert(100%);
+  }
+  .close-icon img {
+    height: 18px;
+    width: 18px;
+  }
+  .mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+  }
+  @media (max-width: 640px) {
+    .main-content {
+      min-height: calc(100% - 16rem);
+      overflow-y: auto;
+    }
+    .desktop-nav, .mobile-nav-overlay  {
+      display: none !important;
+    }
+    .hamburger{
+      display: block;
+    }
+    .hamburger img {
+      filter: invert(100%);
+    }
+    
+  }
+
+  @media (max-width: 640px) {
+    .login-container {
+      width: 100%;
+      text-align: center;
+    }
+    .google-img {
+      max-width: 300px;
+    }
+    .login-container form {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>
+<script>
+function showMobileNav() {
+    var mobileNav = document.getElementById("mobileNav");
+    var closeIcon = document.getElementById("closeIcon");
+    var mobileNavOverlay = document.getElementById("mobileNavOverlay");
+    mobileNav.style.display = "block";
+    closeIcon.style.display = "block";
+    mobileNavOverlay.style.display = "block";
+    mobileNav.focus(); // Add this line
+    mobileNavOverlay.style.pointerEvents = "auto"; // Add this line
+}
+
+function hideMobileNav() {
+    var mobileNav = document.getElementById("mobileNav");
+    var closeIcon = document.getElementById("closeIcon");
+    var mobileNavOverlay = document.getElementById("mobileNavOverlay");
+    mobileNav.style.display = "none";
+    closeIcon.style.display = "none";
+    mobileNavOverlay.style.display = "none";
+    mobileNavOverlay.style.pointerEvents = "none"; // Add this line
+}
+</script>
